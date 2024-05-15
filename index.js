@@ -2,23 +2,35 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
+
+const {jwtTokenGenerate, jwtTokenVerify} = require("./jwt");
 
 app.use(bodyParser.json());
 
 const nodemailer = require("nodemailer");
 
 const port = process.env.PORT || 3003;
-console.log(process.env.GODADDY_EMAIL);
+
 // godaddy email credentials
 const godaddyEmail = process.env.GODADDY_EMAIL;
 const godaddyPassword = process.env.GODADDY_EMAIL_PASSWORD;
 const sendTo = process.env.SEND_TO;
+const homeUrl = process.env.HOME_URL;
+const whitePaperId1 = process.env.WHITEPAPER_ID_1;
+const whitePaperId2 = process.env.WHITEPAPER_ID_2;
+const whitePaperId3 = process.env.WHITEPAPER_ID_3;
+
+const whitePapers = [whitePaperId1, whitePaperId2, whitePaperId3];
+
+console.log(godaddyEmail);
 
 var corsOptions = {
-	origin: [""],
+	origin: ["http://localhost"],
 	optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
+
+app.use(cors());
 
 const mailTransport = nodemailer.createTransport({
 	host: "smtpout.secureserver.net",
@@ -37,12 +49,27 @@ const mailTransport = nodemailer.createTransport({
 });
 
 app.get("/", (req, res) => {
-	res.send("Hello World!");
+	const token = jwtTokenGenerate({id: whitePaperId1});
+	const url = `${homeUrl}/verify?token=${token}`;
+	res.send(url);
 });
 
-app.post("/email", cors(corsOptions), (req, res) => {
-	const {name, phone, email, job_title, business_url, business_name} =
+app.get("/verify", (req, res) => {
+	const {token} = req.query;
+	try {
+		const {id} = jwtTokenVerify(token);
+		res.redirect(`https://drive.google.com/uc?export=download&id=${id}`);
+	} catch (error) {
+		res.send("error");
+	}
+});
+
+app.post("/email", async (req, res) => {
+	const {name, phone, email, job_title, business_url, business_name, whitePaperNo} =
 		req.body;
+
+	const token = jwtTokenGenerate({id: whitePapers[whitePaperNo]});
+	const url = `${homeUrl}/verify?token=${token}`;
 
 	const mailOptions = {
 		from: godaddyEmail,
@@ -60,22 +87,26 @@ app.post("/email", cors(corsOptions), (req, res) => {
     `,
 	};
 
+	const mailToclient = {
+		from: godaddyEmail,
+		to: email,
+		subject: "Welcome to Heystack",
+		text: `
+      Click the link to download the white paper
+
+			${url}
+    `,
+	};
+
 	try {
-		mailTransport
-			.sendMail(mailOptions)
-			.then(() => {
-				res.send({
-					error: false,
-					message: "success",
-				});
-			})
-			.catch((err) => {
-				console.log("err", err);
-				res.send({
-					error: true,
-					message: "error",
-				});
-			});
+		// await mailTransport.sendMail(mailOptions);
+
+		await mailTransport.sendMail(mailToclient);
+
+		res.send({
+			error: false,
+			message: "success",
+		});
 	} catch (error) {
 		console.log(error);
 		res.send({
@@ -83,12 +114,9 @@ app.post("/email", cors(corsOptions), (req, res) => {
 			message: "error",
 		});
 	}
-  
 });
 
 app.listen(port, () => {
 	console.log(`Example app listening on port ${port}`);
 });
-
 module.exports = app;
-// ... (previous code) module.exports = app; // Export the Express app
