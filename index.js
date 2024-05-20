@@ -92,53 +92,53 @@ app.post("/email", async (req, res) => {
 		"Owner(s) Email": email,
 	});
 
-	res.send({status: "sucess"});
-	// const token = jwtTokenGenerate({id: whitePapers[whitePaperNo]});
-	// const url = `${homeUrl}/verify?token=${token}`;
+	// res.send({status: "sucess"});
+	const token = jwtTokenGenerate({id: whitePapers[whitePaperNo]});
+	const url = `${homeUrl}/verify?token=${token}`;
 
-	// const mailOptions = {
-	// 	from: godaddyEmail,
-	// 	to: sendTo,
-	// 	subject: "White paper forms",
-	// 	text: `
-    //   Hi Seth,
+	const mailOptions = {
+		from: godaddyEmail,
+		to: sendTo,
+		subject: "White paper forms",
+		text: `
+      Hi Seth,
 
-    //   Name:     ${name}
-    //   Email:    ${email}
-    //   Phone:    ${phone}
-    //   Job Title: ${job_title}
-    //   Business Name: ${business_name}
-    //   Business URL:  ${business_url}
-    // `,
-	// };
+      Name:     ${name}
+      Email:    ${email}
+      Phone:    ${phone}
+      Job Title: ${job_title}
+      Business Name: ${business_name}
+      Business URL:  ${business_url}
+    `,
+	};
 
-	// const mailToclient = {
-	// 	from: godaddyEmail,
-	// 	to: email,
-	// 	subject: "Welcome to Heystack",
-	// 	text: `
-    //   Click the link to download the white paper
+	const mailToclient = {
+		from: godaddyEmail,
+		to: email,
+		subject: "Welcome to Heystack",
+		text: `
+      Click the link to download the white paper
 
-	// 		${url}
-    // `,
-	// };
+			${url}
+    `,
+	};
 
-	// try {
-	// 	// await mailTransport.sendMail(mailOptions);
+	try {
+		// await mailTransport.sendMail(mailOptions);
 
-	// 	await mailTransport.sendMail(mailToclient);
+		await mailTransport.sendMail(mailToclient);
 
-	// 	res.send({
-	// 		error: false,
-	// 		message: "success",
-	// 	});
-	// } catch (error) {
-	// 	console.log(error);
-	// 	res.send({
-	// 		error: true,
-	// 		message: "error",
-	// 	});
-	// }
+		res.send({
+			error: false,
+			message: "success",
+		});
+	} catch (error) {
+		console.log(error);
+		res.send({
+			error: true,
+			message: "error",
+		});
+	}
 });
 
 app.listen(port, () => {
