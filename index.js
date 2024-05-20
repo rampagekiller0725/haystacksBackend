@@ -29,28 +29,6 @@ const whitePaperId3 = process.env.WHITEPAPER_ID_3;
 
 const whitePapers = [whitePaperId1, whitePaperId2, whitePaperId3];
 
-console.log(godaddyEmail);
-
-const googleSpreed = async () => {
-	
-	
-	// console.log(doc.title);
-	// await doc.updateProperties({ title: 'renamed doc' });
-	
-	// const sheet = doc.sheetsByIndex[0];
-	// console.log(sheet.title);
-	// console.log(sheet.rowCount);
-	
-	// const newSheet = new doc.addSheet({ title: 'another sheet' });
-	// await newSheet.delete();
-}
-try {
-	await googleSpreed();	
-} catch (error) {
-	console.log("err", error)
-}
-
-
 var corsOptions = {
 	origin: ["http://localhost"],
 	optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -94,6 +72,7 @@ app.post("/email", async (req, res) => {
 	const {name, phone, email, job_title, business_url, business_name, whitePaperNo} =
 		req.body;
 
+		console.log(req.body);
 		
 	const serviceAccountAuth = new JWT({
 		email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -112,6 +91,8 @@ app.post("/email", async (req, res) => {
 		"Owner Full name": name,
 		"Owner(s) Email": email,
 	});
+
+	res.send({status: "sucess"});
 	// const token = jwtTokenGenerate({id: whitePapers[whitePaperNo]});
 	// const url = `${homeUrl}/verify?token=${token}`;
 
