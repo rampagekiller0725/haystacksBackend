@@ -106,6 +106,7 @@ app.post("/email", async (req, res) => {
 		res.send({
 			error: false,
 			message: "success",
+			url: url,
 		});
 	} catch (error) {
 		console.log(error);
