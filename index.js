@@ -1,8 +1,8 @@
-import { createRequire } from 'module';
-import { GoogleSpreadsheet } from 'google-spreadsheet';
-import { JWT } from 'google-auth-library';
-import { jwtTokenGenerate, jwtTokenVerify } from './jwt.js';
-const require = createRequire(import.meta.url);
+// const { createRequire } = require('module');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library');
+const { jwtTokenGenerate, jwtTokenVerify } = require('./jwt.js');
+// const require = createRequire(import.meta.url);
 
 require("dotenv").config();
 const express = require("express");
@@ -149,4 +149,4 @@ app.listen(port, () => {
 	console.log(`Example app listening on port ${port}`);
 });
 
-export default app;
+module.exports = app;
