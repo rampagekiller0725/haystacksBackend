@@ -1,10 +1,16 @@
+import { createRequire } from 'module';
+import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
+import { jwtTokenGenerate, jwtTokenVerify } from './jwt.js';
+const require = createRequire(import.meta.url);
+
 require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-const {jwtTokenGenerate, jwtTokenVerify} = require("./jwt");
+// const {jwtTokenGenerate, jwtTokenVerify} = require("./jwt");
 
 app.use(bodyParser.json());
 
@@ -22,8 +28,6 @@ const whitePaperId2 = process.env.WHITEPAPER_ID_2;
 const whitePaperId3 = process.env.WHITEPAPER_ID_3;
 
 const whitePapers = [whitePaperId1, whitePaperId2, whitePaperId3];
-
-console.log(godaddyEmail);
 
 var corsOptions = {
 	origin: ["http://localhost"],
@@ -68,6 +72,27 @@ app.post("/email", async (req, res) => {
 	const {name, phone, email, job_title, business_url, business_name, whitePaperNo} =
 		req.body;
 
+		console.log(req.body);
+		
+	const serviceAccountAuth = new JWT({
+		email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+		key: process.env.GOOGLE_PRIVATE_KEY.split(String.raw`\n`).join('\n'),
+		scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+	});
+	
+	const doc = new GoogleSpreadsheet('1jzIuo24BbmqpvpvtYOWZNlIdDXmJ8IYXmmqqe3Du8HE', serviceAccountAuth);
+	await doc.loadInfo();
+	const sheet = doc.sheetsByIndex[2];
+	sheet.addRow({
+		Business: business_name,
+		Phone: phone,
+		Date: new Date(),
+		Website: business_url,
+		"Owner Full name": name,
+		"Owner(s) Email": email,
+	});
+
+	// res.send({status: "sucess"});
 	const token = jwtTokenGenerate({id: whitePapers[whitePaperNo]});
 	const url = `${homeUrl}/verify?token=${token}`;
 
@@ -120,4 +145,3 @@ app.post("/email", async (req, res) => {
 app.listen(port, () => {
 	console.log(`Example app listening on port ${port}`);
 });
-module.exports = app;

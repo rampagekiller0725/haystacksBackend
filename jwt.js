@@ -1,3 +1,5 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 const jwt = require("jsonwebtoken");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "secret_key";
@@ -8,7 +10,7 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "secret_key";
  * @param {string | number | undefined} expiresIn expire time. ex: '1h', '1m', 50
  * @return {string} generated token
  */
-function jwtTokenGenerate(claim, expiresIn = "36d"){
+export const jwtTokenGenerate = (claim, expiresIn = "36d") => {
   let options = {};
 
   if (expiresIn) {
@@ -24,7 +26,7 @@ function jwtTokenGenerate(claim, expiresIn = "36d"){
  * @param {string} token token
  * @return {any} decoded object of token
  */
-function jwtTokenVerify(token) {
+export const jwtTokenVerify = (token) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET_KEY);
     return decoded;
@@ -33,7 +35,7 @@ function jwtTokenVerify(token) {
   }
 };
 
-module.exports={
-  ['jwtTokenGenerate']:(claim) => jwtTokenGenerate(claim),
-  ['jwtTokenVerify']:(token) => jwtTokenVerify(token)
-}
+// module.exports={
+//   ['jwtTokenGenerate']:(claim) => jwtTokenGenerate(claim),
+//   ['jwtTokenVerify']:(token) => jwtTokenVerify(token)
+// }
