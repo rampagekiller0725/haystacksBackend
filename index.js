@@ -27,6 +27,8 @@ const whitePaperId1 = process.env.WHITEPAPER_ID_1;
 const whitePaperId2 = process.env.WHITEPAPER_ID_2;
 const whitePaperId3 = process.env.WHITEPAPER_ID_3;
 
+const spreadSheetId = process.env.SPREADSHEETID;
+
 const whitePapers = [whitePaperId1, whitePaperId2, whitePaperId3];
 
 var corsOptions = {
@@ -53,9 +55,10 @@ const mailTransport = nodemailer.createTransport({
 });
 
 app.get("/", (req, res) => {
-	const token = jwtTokenGenerate({id: whitePaperId1});
-	const url = `${homeUrl}/verify?token=${token}`;
-	res.send(url);
+	// const token = jwtTokenGenerate({id: whitePaperId1});
+	// const url = `${homeUrl}/verify?token=${token}`;
+	// res.send(url);
+	res.send("welcome!");
 });
 
 app.get("/verify", (req, res) => {
@@ -80,7 +83,7 @@ app.post("/email", async (req, res) => {
 		scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 	});
 	
-	const doc = new GoogleSpreadsheet('1jzIuo24BbmqpvpvtYOWZNlIdDXmJ8IYXmmqqe3Du8HE', serviceAccountAuth);
+	const doc = new GoogleSpreadsheet(spreadSheetId, serviceAccountAuth);
 	await doc.loadInfo();
 	const sheet = doc.sheetsByIndex[2];
 	sheet.addRow({
