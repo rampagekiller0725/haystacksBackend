@@ -91,7 +91,7 @@ app.post("/email", async (req, res) => {
 					"Document Downloaded",
 					`${whitePaperName},${docNames}`
 				);
-				await existRow.save();
+				existRow.save();
 				// send email
 				sendMail(mailToclient);
 
@@ -103,7 +103,7 @@ app.post("/email", async (req, res) => {
 				});
 			}
 		} else {
-			await addRow({
+			addRow({
 				business_name,
 				business_url,
 				name,
