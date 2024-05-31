@@ -93,7 +93,7 @@ app.post("/email", async (req, res) => {
 				);
 				await existRow.save();
 				// send email
-				await sendMail(mailToclient);
+				sendMail(mailToclient);
 
 				return res.json({
 					error: false,
@@ -112,7 +112,7 @@ app.post("/email", async (req, res) => {
 				docName: whitePaperName,
 			});
 
-			await sendMail(mailToclient);
+			sendMail(mailToclient);
 
 			return res.json({
 				error: false,
