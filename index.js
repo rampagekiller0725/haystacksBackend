@@ -1,20 +1,15 @@
-// const { createRequire } = require('module');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library');
-const { jwtTokenGenerate, jwtTokenVerify } = require('./jwt.js');
-// const require = createRequire(import.meta.url);
-
 require("dotenv").config();
 const express = require("express");
-const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-// const {jwtTokenGenerate, jwtTokenVerify} = require("./jwt");
+const {jwtTokenGenerate, jwtTokenVerify} = require("./src/jwt.js");
+const {whitePapers} = require("./src/constants.js");
+const {findRowByEmail, addRow} = require("./src/googlesheet.js");
+const {sendMail} = require("./src/email.js");
 
+const app = express();
 app.use(bodyParser.json());
-
-const nodemailer = require("nodemailer");
 
 const port = process.env.PORT || 3003;
 
@@ -23,13 +18,6 @@ const godaddyEmail = process.env.GODADDY_EMAIL;
 const godaddyPassword = process.env.GODADDY_EMAIL_PASSWORD;
 const sendTo = process.env.SEND_TO;
 const homeUrl = process.env.HOME_URL;
-const whitePaperId1 = process.env.WHITEPAPER_ID_1;
-const whitePaperId2 = process.env.WHITEPAPER_ID_2;
-const whitePaperId3 = process.env.WHITEPAPER_ID_3;
-
-const spreadSheetId = process.env.SPREADSHEETID;
-
-const whitePapers = [whitePaperId1, whitePaperId2, whitePaperId3];
 
 var corsOptions = {
 	origin: ["http://localhost"],
@@ -37,22 +25,6 @@ var corsOptions = {
 };
 
 app.use(cors());
-
-const mailTransport = nodemailer.createTransport({
-	host: "smtpout.secureserver.net",
-	secure: true,
-	secureConnection: false, // TLS requires secureConnection to be false
-	tls: {
-		ciphers: "SSLv3",
-	},
-	requireTLS: true,
-	port: 465,
-	debug: true,
-	auth: {
-		user: godaddyEmail,
-		pass: godaddyPassword,
-	},
-});
 
 app.get("/", (req, res) => {
 	// const token = jwtTokenGenerate({id: whitePaperId1});
@@ -72,76 +44,88 @@ app.get("/verify", (req, res) => {
 });
 
 app.post("/email", async (req, res) => {
-	const {name, phone, email, job_title, business_url, business_name, whitePaperNo} =
-		req.body;
+	const {
+		name,
+		phone,
+		email,
+		job_title,
+		business_url,
+		business_name,
+		whitePaperNo,
+	} = req.body;
 
-		console.log(req.body);
-		
-	const serviceAccountAuth = new JWT({
-		email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-		key: process.env.GOOGLE_PRIVATE_KEY.split(String.raw`\n`).join('\n'),
-		scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-	});
-	
-	const doc = new GoogleSpreadsheet(spreadSheetId, serviceAccountAuth);
-	await doc.loadInfo();
-	const sheet = doc.sheetsByIndex[2];
-	sheet.addRow({
-		Business: business_name,
-		Phone: phone,
-		Date: new Date(),
-		Website: business_url,
-		"Owner Full name": name,
-		"Owner(s) Email": email,
-	});
+	try {
+		const token = jwtTokenGenerate({id: whitePapers[whitePaperNo].id});
+		const url = `${homeUrl}/verify?token=${token}`;
 
-	// res.send({status: "sucess"});
-	const token = jwtTokenGenerate({id: whitePapers[whitePaperNo]});
-	const url = `${homeUrl}/verify?token=${token}`;
-
-	const mailOptions = {
-		from: godaddyEmail,
-		to: sendTo,
-		subject: "White paper forms",
-		text: `
-      Hi Seth,
-
-      Name:     ${name}
-      Email:    ${email}
-      Phone:    ${phone}
-      Job Title: ${job_title}
-      Business Name: ${business_name}
-      Business URL:  ${business_url}
-    `,
-	};
-
-	const mailToclient = {
-		from: godaddyEmail,
-		to: email,
-		subject: "Welcome to Heystack",
-		text: `
+		const mailToclient = {
+			from: godaddyEmail,
+			to: email,
+			subject: "Welcome to Heystack",
+			text: `
       Click the link to download the white paper
 
 			${url}
     `,
-	};
+		};
 
-	try {
-		// await mailTransport.sendMail(mailOptions);
+		const existRow = await findRowByEmail(email);
+		const whitePaperName = whitePapers[whitePaperNo].name;
 
-		await mailTransport.sendMail(mailToclient);
+		if (existRow) {
+			// console.log(existRow);
+			const docNames = existRow.get("Document Downloaded");
 
-		res.send({
-			error: false,
-			message: "success",
-			url: url,
-		});
+			if (
+				docNames &&
+				docNames.split(",").find((doc) => doc.trim() === whitePaperName)
+			) {
+				return res.send({
+					error: false,
+					message: "success",
+					alreadySigned: true,
+					url: url,
+				});
+			} else {
+				existRow.set(
+					"Document Downloaded",
+					`${whitePaperName},${docNames}`
+				);
+				await existRow.save();
+				// send email
+
+				const res = await sendMail(mailToclient);
+
+				return res.send({
+					error: false,
+					message: "success",
+					alreadySigned: false,
+					url: url,
+				});
+			}
+		} else {
+			await addRow({
+				business_name,
+				business_url,
+				name,
+				email,
+				phone,
+				docName: whitePaperName,
+			});
+
+			const res = await sendMail(mailToclient);
+
+			return res.send({
+				error: false,
+				message: "success",
+				alreadySigned: false,
+				url: url,
+			});
+		}
 	} catch (error) {
-		console.log(error);
-		res.send({
+		return {
 			error: true,
-			message: "error",
-		});
+		};
 	}
 });
 
