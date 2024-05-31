@@ -80,7 +80,7 @@ app.post("/email", async (req, res) => {
 				docNames &&
 				docNames.split(",").find((doc) => doc.trim() === whitePaperName)
 			) {
-				return res.send({
+				return res.json({
 					error: false,
 					message: "success",
 					alreadySigned: true,
@@ -93,10 +93,9 @@ app.post("/email", async (req, res) => {
 				);
 				await existRow.save();
 				// send email
+				await sendMail(mailToclient);
 
-				const res = await sendMail(mailToclient);
-
-				return res.send({
+				return res.json({
 					error: false,
 					message: "success",
 					alreadySigned: false,
@@ -113,9 +112,9 @@ app.post("/email", async (req, res) => {
 				docName: whitePaperName,
 			});
 
-			const res = await sendMail(mailToclient);
+			await sendMail(mailToclient);
 
-			return res.send({
+			return res.json({
 				error: false,
 				message: "success",
 				alreadySigned: false,
@@ -123,14 +122,15 @@ app.post("/email", async (req, res) => {
 			});
 		}
 	} catch (error) {
-		return {
+		console.log(error);
+		return res.json({
 			error: true,
-		};
+		});
 	}
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening on port ${port}`);
+	console.log(`app listening on port ${port}`);
 });
 
 module.exports = app;

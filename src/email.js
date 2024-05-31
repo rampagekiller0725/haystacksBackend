@@ -27,7 +27,7 @@ const sendMail = async (mailOption) => {
 		await mailTransport.sendMail(mailOption);
 		return true;
 	} catch (error) {
-		console.log(error);
+		console.log("--", error);
 		return false;
 	}
 }
