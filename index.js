@@ -63,7 +63,7 @@ app.post("/email", async (req, res) => {
 		const mailToclient = {
 			from: godaddyEmail,
 			to: email,
-			subject: "Welcome to Heystack",
+			subject: "Welcome to Haystacks Tech",
 			text: `
       Click the link to download the white paper
 
