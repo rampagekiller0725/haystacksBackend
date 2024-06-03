@@ -11,21 +11,21 @@ const godaddyPassword = process.env.GODADDY_EMAIL_PASSWORD;
 const sendMail = async (mailOption) => {
   try {
     const mailTransport = nodemailer.createTransport({
-      host: "smtpout.secureserver.net",
-      secure: true,
-      secureConnection: false, // TLS requires secureConnection to be false
+      host: "smtp.office365.com",
+      // secure: true,
+      secureConnection: true, // TLS requires secureConnection to be false
       tls: {
         ciphers: "SSLv3",
       },
-      requireTLS: true,
-      port: 465,
-      debug: true,
+      // requireTLS: true,
+      port: 587,
+      // debug: true,
       auth: {
         user: godaddyEmail,
         pass: godaddyPassword,
       },
     });
-    
+
     console.log("sending email...")
 		await mailTransport.sendMail(mailOption);
     console.log("email sent")
