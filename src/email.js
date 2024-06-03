@@ -24,10 +24,12 @@ const mailTransport = nodemailer.createTransport({
  */
 const sendMail = async (mailOption) => {
   try {
+    console.log("sending email...")
 		await mailTransport.sendMail(mailOption);
+    console.log("email sent")
 		return true;
 	} catch (error) {
-		console.log("--", error);
+		console.log("email sending error", error);
 		return false;
 	}
 }

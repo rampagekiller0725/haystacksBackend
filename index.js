@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 
 const {jwtTokenGenerate, jwtTokenVerify} = require("./src/jwt.js");
 const {whitePapers} = require("./src/constants.js");
-const {findRowByEmail, addRow} = require("./src/googlesheet.js");
+const {findRowByEmail, addRow, loadInfo} = require("./src/googlesheet.js");
 const {sendMail} = require("./src/email.js");
 
 const app = express();
@@ -23,6 +23,8 @@ var corsOptions = {
 	origin: ["http://localhost"],
 	optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
+
+loadInfo();
 
 app.use(cors());
 

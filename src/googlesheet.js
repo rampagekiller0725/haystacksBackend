@@ -2,6 +2,7 @@ const {GoogleSpreadsheet} = require("google-spreadsheet");
 const {JWT} = require("google-auth-library");
 
 const spreadSheetId = process.env.SPREADSHEETID;
+const leadSheetTitle = process.env.SPREADSHEET_TITLE;
 
 const serviceAccountAuth = new JWT({
 	email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -12,17 +13,23 @@ const serviceAccountAuth = new JWT({
 const doc = new GoogleSpreadsheet(spreadSheetId, serviceAccountAuth);
 
 
-(async function () {
-  await doc.loadInfo();
-})();
+// (async function () {
+//   await doc.loadInfo();
+// })();
+
+const loadInfo = async () => {
+	console.log("loading doc info...");
+	await doc.loadInfo();
+	console.log("doc info loaded")
+}
 
 /**
  * @description Add new row to the given sheet
  * @param {number} sheetIndex
  * @param {object} row
  */
-const addRow = async (row, sheetIndex = 2) => {
-	const sheet = doc.sheetsByIndex[sheetIndex];
+const addRow = async (row) => {
+	const sheet = doc.sheetsByTitle[leadSheetTitle];
 
 	const {business_name, business_url, name, email, phone, docName} = row;
 
@@ -43,8 +50,8 @@ const addRow = async (row, sheetIndex = 2) => {
  * @param {number} sheetIndex
  * @return {boolean} row if existing, undefined if not
  */
-const findRowByEmail = async (email, sheetIndex = 2) => {
-	const sheet = doc.sheetsByIndex[sheetIndex];
+const findRowByEmail = async (email) => {
+	const sheet = doc.sheetsByTitle[leadSheetTitle];
 
 	const rows = await sheet.getRows();
 
@@ -55,4 +62,5 @@ module.exports = {
 	["addRow"]: (row, sheetIndex) => addRow(row, sheetIndex),
 	["findRowByEmail"]: (email, sheetIndex) =>
 		findRowByEmail(email, sheetIndex),
+	loadInfo,
 };
