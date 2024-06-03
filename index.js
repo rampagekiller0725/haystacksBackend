@@ -24,7 +24,6 @@ var corsOptions = {
 	optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
-loadInfo();
 
 app.use(cors());
 
@@ -57,6 +56,7 @@ app.post("/email", async (req, res) => {
 	} = req.body;
 
 	try {
+		await loadInfo();
 		const token = jwtTokenGenerate({id: whitePapers[whitePaperNo].id});
 		const url = `${homeUrl}/verify?token=${token}`;
 
