@@ -114,7 +114,7 @@ app.post("/email", async (req, res) => {
 				docName: whitePaperName,
 			});
 
-			sendMail(mailToclient);
+			await sendMail(mailToclient);
 
 			return res.json({
 				error: false,
